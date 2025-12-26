@@ -1,141 +1,235 @@
-import React, { useState, useEffect } from 'react';
-import { Scale, Heart, AlertTriangle, ShieldCheck, Zap, Info, TrendingUp, HandHelping } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ethical Weight of Wealth</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX transformation in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #001f3f;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-const App = () => {
-  const [balance, setBalance] = useState(0);
-  const [activeFactors, setActiveFactors] = useState([]);
-  const [showInsight, setShowInsight] = useState(false);
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  // Factors that influence the "Weight" of money
-  const factors = [
-    { id: 'survival', label: 'Survival', value: 10, color: 'text-yellow-400', icon: <ShieldCheck size={20} />, description: "Necessary weight for basic human dignity and grounding." },
-    { id: 'service', label: 'Service', value: 25, color: 'text-yellow-200', icon: <HandHelping size={20} />, description: "Buoyant wealth that lifts the weight of others." },
-    { id: 'control', label: 'Control', value: -20, color: 'text-blue-400', icon: <Zap size={20} />, description: "Dense energy that binds the will of others." },
-    { id: 'greed', label: 'Greed', value: -30, color: 'text-blue-600', icon: <AlertTriangle size={20} />, description: "Heavy accumulation that causes spiritual sinking." },
-    { id: 'growth', label: 'Growth', value: 5, color: 'text-yellow-500', icon: <TrendingUp size={20} />, description: "Natural expansion of resources and capability." },
-    { id: 'love', label: 'Love', value: 30, color: 'text-yellow-100', icon: <Heart size={20} />, description: "The ultimate lightness of being." },
-  ];
+        const App = () => {
+            const [balance, setBalance] = useState(0);
+            const [activeFactors, setActiveFactors] = useState([]);
+            const [showInsight, setShowInsight] = useState(false);
 
-  const toggleFactor = (factor) => {
-    if (activeFactors.find(f => f.id === factor.id)) {
-      setActiveFactors(activeFactors.filter(f => f.id !== factor.id));
-    } else {
-      setActiveFactors([...activeFactors, factor]);
-    }
-  };
+            // Fixed Icon component to correctly handle Lucide in a browser-side environment
+            // The previous error occurred because 'lucide[name]' returns a function that expects 
+            // to be called as lucide.createIcons or used as a template, not directly as a React component.
+            const Icon = ({ name, size = 24, className = "" }) => {
+                const iconRef = React.useRef(null);
 
-  useEffect(() => {
-    const newBalance = activeFactors.reduce((acc, curr) => acc + curr.value, 0);
-    setBalance(newBalance);
-  }, [activeFactors]);
+                useEffect(() => {
+                    if (iconRef.current && window.lucide) {
+                        // Clear previous content
+                        iconRef.current.innerHTML = '';
+                        // Create the icon element
+                        const iconData = window.lucide.icons[name];
+                        if (iconData) {
+                            const svg = window.lucide.createIcons({
+                                icons: { [name]: iconData },
+                                attrs: {
+                                    class: className,
+                                    width: size,
+                                    height: size,
+                                    'stroke-width': 2
+                                }
+                            });
+                        }
+                        // Manual SVG creation as fallback for this specific environment 
+                        // if createIcons isn't behaving as expected in the React lifecycle
+                        const svgString = window.lucide.icons[name];
+                        if (svgString) {
+                           // Lucide icons in global script tags often need manual mounting
+                           const iconElement = document.createElement('i');
+                           iconElement.setAttribute('data-lucide', name.toLowerCase().replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase());
+                           iconRef.current.appendChild(iconElement);
+                           window.lucide.createIcons({
+                               attrs: {
+                                   class: className,
+                                   width: size,
+                                   height: size
+                               }
+                           });
+                        }
+                    }
+                }, [name, size, className]);
 
-  const getStatus = () => {
-    if (balance > 20) return { text: "Luminous Wealth", sub: "Wealth that ascends and liberates.", bg: "bg-yellow-900/20", border: "border-yellow-400" };
-    if (balance < -10) return { text: "Burdened Debt", sub: "Material density that drags the spirit down.", bg: "bg-blue-900/20", border: "border-blue-500" };
-    return { text: "Measured Value", sub: "A tool waiting for a direction.", bg: "bg-slate-800", border: "border-slate-600" };
-  };
+                // Fallback using simple SVG or Emoji if Lucide mounting fails or to ensure stability
+                // For this environment, we will use a more stable inline SVG helper approach
+                return (
+                    <span ref={iconRef} className="inline-flex items-center justify-center"></span>
+                );
+            };
 
-  const status = getStatus();
+            // Enhanced Icon implementation for React in standalone script
+            const LucideIcon = ({ name, size = 24, className = "" }) => {
+                // We use a simple data-attribute approach which is how lucide.js works best without a bundler
+                useEffect(() => {
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                }, [name]);
 
-  return (
-    <div className="min-h-screen bg-[#001f3f] text-yellow-50 p-4 md:p-8 flex flex-col items-center font-sans">
-      {/* Header */}
-      <div className="max-w-2xl w-full text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tighter mb-2 text-yellow-400 uppercase italic">
-          The Ethical Weight of Wealth
-        </h1>
-        <p className="text-blue-200 opacity-80 italic underline decoration-yellow-600 decoration-2">
-          "Is money a wing that lets you soar, or an anchor that drags you deep?"
-        </p>
-      </div>
+                const kebabName = name.toLowerCase().replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+                
+                return (
+                    <i 
+                        data-lucide={kebabName} 
+                        className={className} 
+                        style={{ width: size, height: size, display: 'inline-block' }}
+                    ></i>
+                );
+            };
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full">
-        
-        {/* Left Column: The Scale UI */}
-        <div className="flex flex-col items-center justify-center p-8 bg-black/30 rounded-3xl border border-yellow-900/50 relative overflow-hidden">
-          {/* Subtle Heptagram Background */}
-          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-10 pointer-events-none stroke-current text-yellow-500">
-             <polygon points="50,5 69.5,21.5 90.5,15.5 84.5,36.5 101,56 80,62 74,83 50,75 26,83 20,62 -1,56 15.5,36.5 9.5,15.5 30.5,21.5" fill="none" strokeWidth="0.5" transform="rotate(18, 50, 50)"/>
-          </svg>
+            const factors = [
+                { id: 'survival', label: 'Survival', value: 10, color: 'text-yellow-400', icon: 'ShieldCheck', description: "Necessary weight for basic human dignity and grounding." },
+                { id: 'service', label: 'Service', value: 25, color: 'text-yellow-200', icon: 'HandHelping', description: "Buoyant wealth that lifts the weight of others." },
+                { id: 'control', label: 'Control', value: -20, color: 'text-blue-400', icon: 'Zap', description: "Dense energy that binds the will of others." },
+                { id: 'greed', label: 'Greed', value: -30, color: 'text-blue-600', icon: 'AlertTriangle', description: "Heavy accumulation that causes spiritual sinking." },
+                { id: 'growth', label: 'Growth', value: 5, color: 'text-yellow-500', icon: 'TrendingUp', description: "Natural expansion of resources and capability." },
+                { id: 'love', label: 'Love', value: 30, color: 'text-yellow-100', icon: 'Heart', description: "The ultimate lightness of being." },
+            ];
 
-          <div className="relative z-10 flex flex-col items-center">
-            <div className={`transition-transform duration-700 ease-in-out`} style={{ transform: `rotate(${balance * -0.5}deg)` }}>
-              <Scale size={120} className={`${balance >= 0 ? 'text-yellow-400' : 'text-blue-500'} transition-colors duration-500`} />
-            </div>
-            
-            <div className={`mt-8 p-6 rounded-2xl border-2 ${status.border} ${status.bg} w-full text-center transition-all duration-500`}>
-              <h2 className="text-2xl font-bold uppercase tracking-widest">{status.text}</h2>
-              <p className="text-sm opacity-80 mt-1">{status.sub}</p>
-              <div className="mt-4 text-4xl font-mono text-yellow-400">
-                {balance > 0 ? `+${balance}` : balance} ⚖️
-              </div>
-            </div>
-          </div>
-        </div>
+            const toggleFactor = (factor) => {
+                if (activeFactors.find(f => f.id === factor.id)) {
+                    setActiveFactors(activeFactors.filter(f => f.id !== factor.id));
+                } else {
+                    setActiveFactors([...activeFactors, factor]);
+                }
+            };
 
-        {/* Right Column: Interaction Controls */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-6 text-yellow-400 uppercase tracking-widest text-sm font-bold border-b border-yellow-900 pb-2">
-            <Info size={16} /> Calibrate Intentions
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3">
-            {factors.map((f) => {
-              const isActive = activeFactors.find(af => af.id === f.id);
-              return (
-                <button
-                  key={f.id}
-                  onClick={() => toggleFactor(f)}
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-yellow-400 text-[#001f3f] border-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
-                      : 'bg-[#002a54] text-yellow-100 border-yellow-900/30 hover:border-yellow-500/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={isActive ? 'text-[#001f3f]' : f.color}>{f.icon}</span>
-                    <div className="text-left">
-                      <div className="font-bold uppercase text-xs tracking-wider">{f.label}</div>
-                      <div className={`text-[10px] leading-tight max-w-[200px] ${isActive ? 'text-[#001f3f]/80' : 'opacity-60'}`}>
-                        {f.description}
-                      </div>
+            useEffect(() => {
+                const newBalance = activeFactors.reduce((acc, curr) => acc + curr.value, 0);
+                setBalance(newBalance);
+            }, [activeFactors]);
+
+            const getStatus = () => {
+                if (balance > 20) return { text: "Luminous Wealth", sub: "Wealth that ascends and liberates.", bg: "bg-yellow-900/20", border: "border-yellow-400" };
+                if (balance < -10) return { text: "Burdened Debt", sub: "Material density that drags the spirit down.", bg: "bg-blue-900/20", border: "border-blue-500" };
+                return { text: "Measured Value", sub: "A tool waiting for a direction.", bg: "bg-slate-800", border: "border-slate-600" };
+            };
+
+            const status = getStatus();
+
+            return (
+                <div className="min-h-screen bg-[#001f3f] text-yellow-50 p-4 md:p-8 flex flex-col items-center font-sans">
+                    <div className="max-w-2xl w-full text-center mb-12">
+                        <h1 className="text-4xl font-bold tracking-tighter mb-2 text-yellow-400 uppercase italic">
+                            The Ethical Weight of Wealth
+                        </h1>
+                        <p className="text-blue-200 opacity-80 italic underline decoration-yellow-600 decoration-2">
+                            "Is money a wing that lets you soar, or an anchor that drags you deep?"
+                        </p>
                     </div>
-                  </div>
-                  <div className="font-mono text-xs">
-                    {f.value > 0 ? `+${f.value}` : f.value}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
 
-          <button 
-            onClick={() => setShowInsight(!showInsight)}
-            className="w-full mt-6 p-3 rounded-lg border border-blue-500/30 text-blue-300 text-xs uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-colors"
-          >
-            {showInsight ? "Hide Contemplation" : "Show Contemplation"}
-          </button>
-        </div>
-      </div>
+                    <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full">
+                        <div className="flex flex-col items-center justify-center p-8 bg-black/30 rounded-3xl border border-yellow-900/50 relative overflow-hidden">
+                            <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-10 pointer-events-none stroke-current text-yellow-500">
+                                <polygon points="50,5 69.5,21.5 90.5,15.5 84.5,36.5 101,56 80,62 74,83 50,75 26,83 20,62 -1,56 15.5,36.5 9.5,15.5 30.5,21.5" fill="none" strokeWidth="0.5" transform="rotate(18, 50, 50)"/>
+                            </svg>
 
-      {/* Contemplation Text Overlay */}
-      {showInsight && (
-        <div className="max-w-3xl w-full mt-12 p-8 bg-yellow-950/20 border-l-4 border-yellow-400 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h3 className="text-yellow-400 font-bold mb-4 uppercase italic">Order of the Poor: The Weight of Attachment</h3>
-          <p className="text-sm leading-relaxed text-blue-100/90 mb-4">
-            In the physical world, mass is determined by matter. In the spiritual world, "mass" is determined by attachment. When money is used to control or hoard, it becomes incredibly dense, sinking the possessor into material concerns.
-          </p>
-          <p className="text-sm leading-relaxed text-blue-100/90">
-            The Holy Order of the Poor is not an order of lack, but an order of lightness. It is the realization that you cannot carry a heavy purse while trying to climb a spiritual ladder. Is your wealth weightless, or is it an anchor?
-          </p>
-        </div>
-      )}
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="transition-transform duration-700 ease-in-out" style={{ transform: `rotate(${balance * -0.5}deg)` }}>
+                                    <LucideIcon name="Scale" size={120} className={`${balance >= 0 ? 'text-yellow-400' : 'text-blue-500'} transition-colors duration-500`} />
+                                </div>
+                                
+                                <div className={`mt-8 p-6 rounded-2xl border-2 ${status.border} ${status.bg} w-full text-center transition-all duration-500`}>
+                                    <h2 className="text-2xl font-bold uppercase tracking-widest">{status.text}</h2>
+                                    <p className="text-sm opacity-80 mt-1">{status.sub}</p>
+                                    <div className="mt-4 text-4xl font-mono text-yellow-400">
+                                        {balance > 0 ? `+${balance}` : balance} ⚖️
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-      <footer className="mt-auto pt-12 pb-4 text-[10px] text-blue-400/50 uppercase tracking-[0.3em]">
-        Holy Order of the Poor • Ethical Calibrator v1.1
-      </footer>
-    </div>
-  );
-};
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-6 text-yellow-400 uppercase tracking-widest text-sm font-bold border-b border-yellow-900 pb-2">
+                                <LucideIcon name="Info" size={16} /> Calibrate Intentions
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-3">
+                                {factors.map((f) => {
+                                    const isActive = activeFactors.find(af => af.id === f.id);
+                                    return (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => toggleFactor(f)}
+                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 group ${
+                                                isActive 
+                                                    ? 'bg-yellow-400 text-[#001f3f] border-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
+                                                    : 'bg-[#002a54] text-yellow-100 border-yellow-900/30 hover:border-yellow-500/50'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className={isActive ? 'text-[#001f3f]' : f.color}>
+                                                    <LucideIcon name={f.icon} size={20} />
+                                                </span>
+                                                <div className="text-left">
+                                                    <div className="font-bold uppercase text-xs tracking-wider">{f.label}</div>
+                                                    <div className={`text-[10px] leading-tight max-w-[200px] ${isActive ? 'text-[#001f3f]/80' : 'opacity-60'}`}>
+                                                        {f.description}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="font-mono text-xs">
+                                                {f.value > 0 ? `+${f.value}` : f.value}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
-export default App;
+                            <button 
+                                onClick={() => setShowInsight(!showInsight)}
+                                className="w-full mt-6 p-3 rounded-lg border border-blue-500/30 text-blue-300 text-xs uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-colors"
+                            >
+                                {showInsight ? "Hide Contemplation" : "Show Contemplation"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {showInsight && (
+                        <div className="max-w-3xl w-full mt-12 p-8 bg-yellow-950/20 border-l-4 border-yellow-400 animate-in fade-in duration-500">
+                            <h3 className="text-yellow-400 font-bold mb-4 uppercase italic">Order of the Poor: The Weight of Attachment</h3>
+                            <p className="text-sm leading-relaxed text-blue-100/90 mb-4">
+                                In the physical world, mass is determined by matter. In the spiritual world, "mass" is determined by attachment. When money is used to control or hoard, it becomes incredibly dense, sinking the possessor into material concerns.
+                            </p>
+                            <p className="text-sm leading-relaxed text-blue-100/90">
+                                The Holy Order of the Poor is not an order of lack, but an order of lightness. It is the realization that you cannot carry a heavy purse while trying to climb a spiritual ladder. Is your wealth weightless, or is it an anchor?
+                            </p>
+                        </div>
+                    )}
+
+                    <footer className="mt-auto pt-12 pb-4 text-[10px] text-blue-400/50 uppercase tracking-[0.3em]">
+                        Holy Order of the Poor • Ethical Calibrator v1.1
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
